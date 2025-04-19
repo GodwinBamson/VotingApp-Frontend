@@ -1,92 +1,204 @@
-import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
-import Home from "./Components/Home";
-import Navbar from "./Components/Navbar";
-import Login from "./Components/Login";
-import Dashboard from "./Components/Dashboard"; // Correct import
-import { useState, useEffect } from "react";
-import Logout from "./Components/Logout";
-import axios from "axios";
-import AddProduct from "./Components/AddProduct";
-import Inventory from "./Components/Inventory";
-import ReportPage from "./Components/ReportPage";
-import AdminRegister from "./Components/AdminRegister";
-import { BASE_URL, BASE_URL1 } from "../config";
 
-function App() {
-  const [role, setRole] = useState(localStorage.getItem("role") || ""); // Load from localStorage
-  const [isLoading, setIsLoading] = useState(true); // Prevents logout flash on refresh
+// import { useContext } from "react";
+// import {
+//   BrowserRouter,
+//   Routes,
+//   Route,
+//   Navigate,
+//   useNavigate,
+//   useLocation
+// } from "react-router-dom";
+// import { AuthProvider, AuthContext } from "./context/AuthContext";
 
-  axios.defaults.withCredentials = true;
+// import Navbar from "./pages/Navbar";
+// import UnifiedLogin from "./pages/UnifiedLogin";
+// import AddAdmin from "./pages/AddAdmin";
+// import AddProduct from "./pages/AddProduct";
+// import Inventory from "./pages/Inventory";
+// import AdminRegister from "./pages/AdminRegister";
+// import ReportPage from "./pages/ReportPage";
+// import Dashboard from "./pages/Dashboard";
+// import AddStaff from "./pages/AddStaff";
 
-  useEffect(() => {
-    const verifyUser = async () => {
-      const token = localStorage.getItem("token");
+// import { ToastContainer } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
 
-      if (!token) {
-        console.warn("No token found, user logged out");
-        setRole("");
-        setIsLoading(false);
-        return;
-      }
+// const AppRoutes = () => {
+//   const location = useLocation();
+//   const { user, logout } = useContext(AuthContext);
+//   const navigate = useNavigate();
 
-      try {
-        const res = await axios.get(`${BASE_URL}/api/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }, // Send token in headers
-        });
+//   const isSuperAdmin = user?.role === "superadmin";
+//   const isAdmin = user?.role === "admin";
+//   const isStaff = user?.role === "staff";
 
-        if (res.data.login) {
-          setRole(res.data.role);
-          localStorage.setItem("role", res.data.role);
-        } else {
-          setRole("");
-          localStorage.removeItem("role");
-        }
-      } catch (error) {
-        console.error("Verification failed:", error);
-      } finally {
-        setIsLoading(false); // API finished loading
-      }
-    };
+//   const handleLogout = () => {
+//     logout();             // Clear user session
+//     navigate("/");        // Redirect to login page
+//   };
 
-    verifyUser();
-  }, []);
+//   return (
+//     <>
+//       {user && <Navbar role={user.role} onLogout={handleLogout} />}
+
+//       <Routes>
+//         {/* Unified Login for Superadmin, Admin & Staff */}
+//         <Route path="/" element={<UnifiedLogin />} />
+
+//         {/* Super Admin Routes */}
+//         <Route
+//           path="/add-admin"
+//           element={isSuperAdmin ? <AddAdmin /> : <Navigate to="/" replace />}
+//         />
+
+//         {/* Admin Routes */}
+//         <Route
+//           path="/addproduct"
+//           element={isAdmin ? <AddProduct /> : <Navigate to="/" replace />}
+//         />
+//         <Route
+//           path="/admin-register"
+//           element={isAdmin ? <AdminRegister /> : <Navigate to="/" replace />}
+//         />
+//         <Route
+//           path="/reportpage"
+//           element={isAdmin ? <ReportPage /> : <Navigate to="/" replace />}
+//         />
+//         <Route
+//           path="/inventory"
+//           element={(isAdmin || isStaff) ? <Inventory /> : <Navigate to="/" replace />}
+//         />
+//         <Route
+//           path="/add-staff"
+//           element={isAdmin ? <AddStaff key={location.pathname} /> : <Navigate to="/" replace />}
+//         />
+
+//         {/* Shared Route: Admin & Superadmin */}
+//         <Route
+//           path="/dashboard"
+//           element={user ? <Dashboard /> : <Navigate to="/" replace />}
+//         />
+
+//         {/* Catch-all for unknown routes */}
+//         <Route path="*" element={<Navigate to="/" replace />} />
+//       </Routes>
+//     </>
+//   );
+// };
+
+// const App = () => (
+//   <AuthProvider>
+//     <BrowserRouter>
+//       <AppRoutes />
+//       <ToastContainer position="top-right" autoClose={3000} />
+//     </BrowserRouter>
+//   </AuthProvider>
+// );
+
+// export default App;
+
+
+import { useContext } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation
+} from "react-router-dom";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
+
+import Navbar from "./pages/Navbar";
+import UnifiedLogin from "./pages/UnifiedLogin";
+import AddAdmin from "./pages/AddAdmin";
+import AddProduct from "./pages/AddProduct";
+import Inventory from "./pages/Inventory";
+import AdminRegister from "./pages/AdminRegister";
+import ReportPage from "./pages/ReportPage";
+import Dashboard from "./pages/Dashboard";
+import AddStaff from "./pages/AddStaff";
+import DailyReportPage from "./pages/DailyReportPage";  // ✅ Import your new page
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const AppRoutes = () => {
+  const location = useLocation();
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const isSuperAdmin = user?.role === "superadmin";
+  const isAdmin = user?.role === "admin";
+  const isStaff = user?.role === "staff";
 
   const handleLogout = () => {
-    localStorage.removeItem("role");
-    localStorage.removeItem("token"); // Clear token too
-    setRole("");
-  };
-
-  // Private route component for role-based access
-  const PrivateRoute = ({ element, allowedRoles }) => {
-    if (isLoading) return <div>Loading...</div>; // Prevent rendering before API response
-    if (!role || !allowedRoles.includes(role)) {
-      return <Navigate to="/login" />;
-    }
-    return element;
+    logout();             // Clear user session
+    navigate("/");        // Redirect to login page
   };
 
   return (
-    <BrowserRouter>
-      <Navbar role={role} onLogout={handleLogout} />
+    <>
+      {user && <Navbar role={user.role} onLogout={handleLogout} />}
+
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login setRole={(newRole) => {
-          setRole(newRole);
-          localStorage.setItem("role", newRole);
-        }} />} />
+        {/* Unified Login for Superadmin, Admin & Staff */}
+        <Route path="/" element={<UnifiedLogin />} />
 
-        {/* Corrected Dashboard Route */}
-        <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} allowedRoles={["admin", "user"]} />} />
+        {/* Super Admin Routes */}
+        <Route
+          path="/add-admin"
+          element={isSuperAdmin ? <AddAdmin /> : <Navigate to="/" replace />}
+        />
 
-        <Route path="/admin-register" element={<PrivateRoute element={<AdminRegister />} allowedRoles={["admin"]} />} />
-        <Route path="/logout" element={<Logout setRole={handleLogout} />} />
-        <Route path="/addproduct" element={<PrivateRoute element={<AddProduct />} allowedRoles={["admin"]} />} />
-        <Route path="/reportpage" element={<PrivateRoute element={<ReportPage />} allowedRoles={["admin"]} />} />
-        <Route path="/inventory" element={<PrivateRoute element={<Inventory />} allowedRoles={["admin", "user"]} />} />
+        {/* Admin Routes */}
+        <Route
+          path="/addproduct"
+          element={isAdmin ? <AddProduct /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/admin-register"
+          element={isAdmin ? <AdminRegister /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/reportpage"
+          element={isAdmin ? <ReportPage /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/inventory"
+          element={(isAdmin || isStaff) ? <Inventory /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/add-staff"
+          element={isAdmin ? <AddStaff key={location.pathname} /> : <Navigate to="/" replace />}
+        />
+
+        {/* ✅ Daily Report Route — Super Admin & Admin */}
+        <Route
+          path="/daily-report"
+          element={(isSuperAdmin || isAdmin) ? <DailyReportPage /> : <Navigate to="/" replace />}
+        />
+
+        {/* Shared Route: Admin & Superadmin */}
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard /> : <Navigate to="/" replace />}
+        />
+
+        {/* Catch-all for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
-}
+};
+
+const App = () => (
+  <AuthProvider>
+    <BrowserRouter>
+      <AppRoutes />
+      <ToastContainer position="top-right" autoClose={3000} />
+    </BrowserRouter>
+  </AuthProvider>
+);
 
 export default App;

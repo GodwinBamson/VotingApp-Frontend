@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "../css/AddProduct.css";
 import { FaPen, FaTrash } from "react-icons/fa";
 import { BASE_URL } from "../../config";
+import { showSuccess, showError } from "../utils/toastService";
 
 const AddProduct = () => {
   const [name, setName] = useState("");
@@ -12,9 +14,15 @@ const AddProduct = () => {
   const [editing, setEditing] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // Show 8 items per page
+  const itemsPerPage = 8;
+
+  const token = localStorage.getItem("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -22,47 +30,55 @@ const AddProduct = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/product/products`);
+      const { data } = await axios.get(`${BASE_URL}/api/products/products`, config);
       setProducts(data.products || []);
     } catch (error) {
       console.error("Error fetching products:", error);
+      showError("Error fetching products");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const productData = { name, price: Number(price), quantity: Number(quantity) };
+    const productData = {
+      name,
+      price: Number(price),
+      quantity: Number(quantity),
+    };
 
     try {
       if (editing) {
-        // Update product
-        const res = await axios.put(`${BASE_URL}/product/${editing._id}`, productData);
+        const res = await axios.put(`${BASE_URL}/api/products/${editing._id}`, productData, config);
         if (res.data.updated) {
           setProducts((prev) =>
             prev.map((p) => (p._id === editing._id ? res.data.product : p))
           );
+          showSuccess("Product updated successfully");
         }
       } else {
-        // Add product
-        const res = await axios.post(`${BASE_URL}/product/add`, productData);
+        const res = await axios.post(`${BASE_URL}/api/products/add`, productData, config);
         if (res.data.added) {
           setProducts([...products, res.data.product]);
+          showSuccess("Product added successfully");
         }
       }
       resetForm();
     } catch (error) {
-      console.error("Error submitting product:", error);
+      console.error("Error submitting product:", error.response?.data || error.message);
+      showError(error.response?.data?.message || "Error submitting product");
     }
   };
 
   const deleteProduct = async (id) => {
     try {
-      const res = await axios.delete(`${BASE_URL}/product/${id}`);
+      const res = await axios.delete(`${BASE_URL}/api/products/${id}`, config);
       if (res.data.deleted) {
         setProducts(products.filter((product) => product._id !== id));
+        showSuccess("Product deleted successfully");
       }
     } catch (error) {
       console.error("Error deleting product:", error);
+      showError("Error deleting product");
     }
   };
 
@@ -80,12 +96,10 @@ const AddProduct = () => {
     setEditing(null);
   };
 
-  // Filter products by search query
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Pagination logic
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
@@ -93,9 +107,9 @@ const AddProduct = () => {
 
   return (
     <div className="add-container">
-      <h1 className="add-product-name"> <span>Product </span>Tracker</h1>
+      <h1 className="add-product-name"><span>Product </span>Tracker</h1>
 
-      {/* Search input */}
+      {/* Search */}
       <div className="add-search-container">
         <input
           type="text"
@@ -125,12 +139,8 @@ const AddProduct = () => {
                     <td>{product.price}</td>
                     <td>{product.quantity}</td>
                     <td className="add-product-table">
-                      <button onClick={() => startEditing(product)}>
-                        <FaPen size={15} />
-                      </button>
-                      <button className="add-product-red" onClick={() => deleteProduct(product._id)}>
-                        <FaTrash size={15} />
-                      </button>
+                      <button onClick={() => startEditing(product)}><FaPen size={15} /></button>
+                      <button className="add-product-red" onClick={() => deleteProduct(product._id)}><FaTrash size={15} /></button>
                     </td>
                   </tr>
                 ))
@@ -141,6 +151,32 @@ const AddProduct = () => {
               )}
             </tbody>
           </table>
+          {/* Pagination */}
+        <div className="pagination">
+          <button
+            className="add-product-next"
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            &laquo; Prev
+          </button>
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              className={`add-product-none ${currentPage === i + 1 ? "active" : ""}`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            className="add-product-next"
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next &raquo;
+          </button>
+        </div>
         </div>
 
         {/* Product Form */}
@@ -169,35 +205,6 @@ const AddProduct = () => {
             </button>
           </form>
         </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="pagination">
-        <button
-          className="add-product-next"
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-        >
-          &laquo; Prev
-        </button>
-
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            className={`add-product-none ${currentPage === i + 1 ? "active" : ""}`}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          className="add-product-next"
-          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-        >
-          Next &raquo;
-        </button>
       </div>
     </div>
   );
