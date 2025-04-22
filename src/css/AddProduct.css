@@ -159,12 +159,12 @@ h1 {
 
 .add-search-container{
   display: flex;
-  justify-content: center;
+  margin-left: 38.6%;
   padding-bottom: 1rem;
 }
 
 .add-search-container input{
-  width: 40%;
+  width: 60%;
 }
 
 .add-product-name{
@@ -203,6 +203,11 @@ h1 {
 @media (max-width: 767px){
   .add-search-container input{
     width: 80%;
+  }
+
+  .add-search-container{
+    margin-left: 0;
+    justify-content: center;
   }
 
   .add-grid-container{
@@ -255,11 +260,20 @@ h1 {
   padding: 8px 8px;
   border-radius: 50px;
 }
+
+.add-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
 }
 
 @media (min-width: 767px) and (max-width: 1023px){
   .add-grid-container{
     gap: 2rem;
+  }
+  .add-search-container{
+    margin-left: 0;
+    justify-content: center;
   }
 
   .add-form-container {

@@ -24,7 +24,6 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
 /* Navbar Auth Section */
@@ -35,7 +34,7 @@
 /* Logout Button */
 .logout-button {
   padding: 8px 16px;
-  background-color: #e74c3c;
+  background-color: transparent;
   border: none;
   border-radius: 4px;
   color: white;
@@ -45,6 +44,15 @@
 
 .logout-button:hover {
   background-color: #c0392b;
+}
+
+.navbar-link:hover {
+  background-color: rgba(0, 123, 255, 0.105);
+}
+
+.navbar-link{
+  border-radius: 5px;
+  padding: 8px 16px;
 }
 
 /* Navbar Toggle (Hamburger Menu) */
@@ -96,7 +104,7 @@
 /* Navbar Links for Mobile */
 .navbar-right.open {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   position: absolute;
   top: 60px; /* Adjust based on navbar height */
   right: 0;
@@ -124,13 +132,14 @@
 
   .navbar-right.open {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     background: linear-gradient(to right, green 10%, blue 50%, red 100%);
   }
 
-  .navbar-right.open .navbar-link {
-    margin: 0;
-    flex: 0 0 100%; /* Each link takes full width */
+  .navbar-right.open a {
+    margin: 0 !important;
+    flex: 0 0 30%; /* Each link takes full width */
+    
   }
 }
 

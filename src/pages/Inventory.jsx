@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { FaTrash } from "react-icons/fa";
@@ -331,7 +330,7 @@ const Inventory = () => {
                   value={calculateTotal(selectedProduct?.price || 0, qty)}
                 />
               </td>
-              <td>
+              <td className="inventory-add-parent">
                 <button
                   className="quantity-btn"
                   onClick={addProductToCart}

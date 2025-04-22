@@ -6,7 +6,7 @@
 
 .action-buttons button{
     margin-top: 0;
-    width: 25% !important;
+    width: 40% !important;
     padding: 5px 10px;
 }
 
@@ -16,9 +16,66 @@
 
 .add-product-next-admin{
     padding: 8px 20px !important;
-    width: 20% !important;
+    /* width: 20% !important; */
     border-radius: 50px;
 }
+
+.admin-register{
+    display: flex;
+    justify-content: center;
+    margin: 2rem 4rem;
+  }
+
+  .admin-register-form, .admin-register-div{
+    width: 80%;
+  }
+  
+  .admin-register-form input{
+    width: 35vw;
+    margin-top: 1rem;
+  }
+  
+  .admin-register-form button{
+    width: 35vw;
+  }
+  
+  .admin-register-form select{
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: .5rem;
+    width: 35vw;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .add-register-table{
+    width: 50vw;
+  }
+  
+  .admin-register-btn{
+    display: flex;
+    gap: .5rem;
+    justify-content: center;
+  }
+  
+  .admin-register-btn button{
+    width: 30%;
+    background-color: red;
+  }
+  
+  .admin-register-btn button:first-child{
+    background-color: #007bff;
+  }
+  
+  .admin-table-details{
+    margin-top: .6rem;
+  }
+  
+  .admin-register-btn button{
+    margin-top: 0;
+  }
 
 @media (max-width: 767px){
     .action-buttons button{

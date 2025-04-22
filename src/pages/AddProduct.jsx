@@ -13,7 +13,6 @@ const AddProduct = () => {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -40,15 +39,21 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const productData = {
-      name,
-      price: Number(price),
-      quantity: Number(quantity),
-    };
-
+    
     try {
       if (editing) {
-        const res = await axios.put(`${BASE_URL}/api/products/${editing._id}`, productData, config);
+        let updatedProduct = {
+          name,
+          price: Number(price),
+          quantity: Number(quantity),
+        };
+  
+        // If quantity increased, reset sold to 0
+        if (Number(quantity) > editing.quantity) {
+          updatedProduct.sold = 0;
+        }
+  
+        const res = await axios.put(`${BASE_URL}/api/products/${editing._id}`, updatedProduct, config);
         if (res.data.updated) {
           setProducts((prev) =>
             prev.map((p) => (p._id === editing._id ? res.data.product : p))
@@ -56,9 +61,14 @@ const AddProduct = () => {
           showSuccess("Product updated successfully");
         }
       } else {
-        const res = await axios.post(`${BASE_URL}/api/products/add`, productData, config);
+        const newProduct = {
+          name,
+          price: Number(price),
+          quantity: Number(quantity),
+        };
+        const res = await axios.post(`${BASE_URL}/api/products/add`, newProduct, config);
         if (res.data.added) {
-          setProducts([...products, res.data.product]);
+          setProducts((prev) => [...prev, res.data.product]);
           showSuccess("Product added successfully");
         }
       }
@@ -68,12 +78,13 @@ const AddProduct = () => {
       showError(error.response?.data?.message || "Error submitting product");
     }
   };
+  
 
   const deleteProduct = async (id) => {
     try {
       const res = await axios.delete(`${BASE_URL}/api/products/${id}`, config);
       if (res.data.deleted) {
-        setProducts(products.filter((product) => product._id !== id));
+        setProducts((prev) => prev.filter((product) => product._id !== id));
         showSuccess("Product deleted successfully");
       }
     } catch (error) {
@@ -109,7 +120,6 @@ const AddProduct = () => {
     <div className="add-container">
       <h1 className="add-product-name"><span>Product </span>Tracker</h1>
 
-      {/* Search */}
       <div className="add-search-container">
         <input
           type="text"
@@ -120,14 +130,14 @@ const AddProduct = () => {
       </div>
 
       <div className="add-grid-container">
-        {/* Product Table */}
         <div className="add-table-container">
           <table className="add-table-form">
             <thead className="add-product-head">
               <tr className="add-product-tab">
                 <th>Description</th>
                 <th>Price</th>
-                <th>Quantity</th>
+                <th>Stock</th>
+                <th>Sold</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -138,6 +148,7 @@ const AddProduct = () => {
                     <td>{product.name}</td>
                     <td>{product.price}</td>
                     <td>{product.quantity}</td>
+                    <td>{product.sold || 0}</td>
                     <td className="add-product-table">
                       <button onClick={() => startEditing(product)}><FaPen size={15} /></button>
                       <button className="add-product-red" onClick={() => deleteProduct(product._id)}><FaTrash size={15} /></button>
@@ -146,40 +157,39 @@ const AddProduct = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4">No products found</td>
+                  <td colSpan="5">No products found</td>
                 </tr>
               )}
             </tbody>
           </table>
-          {/* Pagination */}
-        <div className="pagination">
-          <button
-            className="add-product-next"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-          >
-            &laquo; Prev
-          </button>
-          {[...Array(totalPages)].map((_, i) => (
+
+          <div className="pagination">
             <button
-              key={i}
-              className={`add-product-none ${currentPage === i + 1 ? "active" : ""}`}
-              onClick={() => setCurrentPage(i + 1)}
+              className="add-product-next"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
             >
-              {i + 1}
+              &laquo; Prev
             </button>
-          ))}
-          <button
-            className="add-product-next"
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next &raquo;
-          </button>
-        </div>
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                className={`add-product-none ${currentPage === i + 1 ? "active" : ""}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="add-product-next"
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next &raquo;
+            </button>
+          </div>
         </div>
 
-        {/* Product Form */}
         <div className="add-form-container">
           <form className="add-product-desrip" onSubmit={handleSubmit}>
             <input
@@ -200,7 +210,11 @@ const AddProduct = () => {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
-            <button className="add-product-update" type="submit" disabled={!name || !price || !quantity}>
+            <button
+              className="add-product-update"
+              type="submit"
+              disabled={!name || !price || !quantity}
+            >
               {editing ? "Update Product" : "Add Product"}
             </button>
           </form>

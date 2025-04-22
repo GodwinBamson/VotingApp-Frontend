@@ -95,7 +95,7 @@ li:hover{
   background-color: red;
   margin-top: 0;
   padding: 5px 10px;
-  width: 21%;
+  width: 28%;
 }
 
 .input-inventory{
@@ -191,6 +191,18 @@ li:hover{
   display: flex;
   justify-content: center;
   height: 8.6vh;
+}
+
+.inventory-checkout-btn {
+  width: auto;
+  /* height: 40px; */
+  padding: 5px 16px;
+  color: white;
+  border-radius: 7px;
+  background-color: #007bff;
+  margin-top: 0;
+  text-align: center;
+  display: flex;
 }
 
 @media (max-width: 767px){
