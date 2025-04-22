@@ -37,9 +37,57 @@ const AddProduct = () => {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   console.log("Form submitted"); // <- add this line
+
+  //   try {
+  //     if (editing) {
+  //       let updatedProduct = {
+  //         name,
+  //         price: Number(price),
+  //         quantity: Number(quantity),
+  //       };
+
+  //       if (Number(quantity) > editing.quantity) {
+  //         updatedProduct.sold = 0;
+  //       }
+
+  //       const res = await axios.put(
+  //         `${BASE_URL}/api/products/${editing._id}`,
+  //         updatedProduct,
+  //         config
+  //       );
+  //       if (res.data.updated) {
+  //         setProducts((prev) =>
+  //           prev.map((p) => (p._id === editing._id ? res.data.product : p))
+  //         );
+  //         showSuccess("Product updated successfully");
+  //       }
+  //     } else {
+  //       const newProduct = {
+  //         name,
+  //         price: Number(price),
+  //         quantity: Number(quantity),
+  //       };
+  //       const res = await axios.post(`${BASE_URL}/api/products/add`, newProduct, config);
+  //       if (res.data.added) {
+  //         setProducts((prev) => [...prev, res.data.product]);
+  //         showSuccess("Product added successfully");
+  //       }
+  //     }
+  //     resetForm();
+  //   } catch (error) {
+  //     console.error("Error submitting product:", error.response?.data || error.message);
+  //     showError(error.response?.data?.message || "Error submitting product");
+  //   }
+  // };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    console.log("Form submitted");
+  
     try {
       if (editing) {
         let updatedProduct = {
@@ -48,13 +96,21 @@ const AddProduct = () => {
           quantity: Number(quantity),
         };
   
-        // If quantity increased, reset sold to 0
+        // Reset sold to 0 if quantity increased
         if (Number(quantity) > editing.quantity) {
           updatedProduct.sold = 0;
         }
   
-        const res = await axios.put(`${BASE_URL}/api/products/${editing._id}`, updatedProduct, config);
-        if (res.data.updated) {
+        const res = await axios.put(
+          `${BASE_URL}/api/products/${editing._id}`,
+          updatedProduct,
+          config
+        );
+  
+        console.log("Update response:", res.data);
+  
+        // ✅ Check for res.data.product instead of res.data.updated
+        if (res.data.product) {
           setProducts((prev) =>
             prev.map((p) => (p._id === editing._id ? res.data.product : p))
           );
@@ -66,12 +122,16 @@ const AddProduct = () => {
           price: Number(price),
           quantity: Number(quantity),
         };
+  
         const res = await axios.post(`${BASE_URL}/api/products/add`, newProduct, config);
+        console.log("Add response:", res.data);
+  
         if (res.data.added) {
           setProducts((prev) => [...prev, res.data.product]);
           showSuccess("Product added successfully");
         }
       }
+  
       resetForm();
     } catch (error) {
       console.error("Error submitting product:", error.response?.data || error.message);
@@ -79,7 +139,6 @@ const AddProduct = () => {
     }
   };
   
-
   const deleteProduct = async (id) => {
     try {
       const res = await axios.delete(`${BASE_URL}/api/products/${id}`, config);
@@ -118,7 +177,9 @@ const AddProduct = () => {
 
   return (
     <div className="add-container">
-      <h1 className="add-product-name"><span>Product </span>Tracker</h1>
+      <h1 className="add-product-name">
+        <span>Product </span>Tracker
+      </h1>
 
       <div className="add-search-container">
         <input
@@ -150,8 +211,15 @@ const AddProduct = () => {
                     <td>{product.quantity}</td>
                     <td>{product.sold || 0}</td>
                     <td className="add-product-table">
-                      <button onClick={() => startEditing(product)}><FaPen size={15} /></button>
-                      <button className="add-product-red" onClick={() => deleteProduct(product._id)}><FaTrash size={15} /></button>
+                      <button onClick={() => startEditing(product)}>
+                        <FaPen size={15} />
+                      </button>
+                      <button
+                        className="add-product-red"
+                        onClick={() => deleteProduct(product._id)}
+                      >
+                        <FaTrash size={15} />
+                      </button>
                     </td>
                   </tr>
                 ))
