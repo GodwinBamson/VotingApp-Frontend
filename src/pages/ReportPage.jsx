@@ -171,7 +171,7 @@ const ReportPage = () => {
         <div className="report-table-container">
           <table>
             <thead>
-              <tr>
+              <tr className="transac-tr">
                 <th>Transaction ID</th>
                 <th>Product Name</th>
                 <th>Quantity</th>
@@ -186,7 +186,7 @@ const ReportPage = () => {
                   const totalAmount = cart.items.reduce((sum, item) => sum + item.totalAmount, 0).toFixed(2);
 
                   return (
-                    <tr key={cart.transactionId}>
+                    <tr key={cart.transactionId} className="transac-tr">
                       <td>{cart.transactionId}</td>
                       <td>
                         {cart.items.map((item, index) => (
@@ -231,6 +231,7 @@ const ReportPage = () => {
             <ul>
               {selectedTransaction.items.map((item, index) => (
                 <li key={index}>{item.productId?.name}: {item.quantity} x ₦{item.totalAmount}</li>
+                
               ))}
             </ul>
             <p>Total Amount: ₦{selectedTransaction.totalAmount}</p>

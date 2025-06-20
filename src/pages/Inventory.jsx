@@ -4,7 +4,7 @@ import axios from "axios";
 import { FaTrash } from "react-icons/fa";
 import "../css/Inventory.css";
 import { BASE_URL } from "../../config";
-import { showSuccess, showError } from "../utils/toastService"; // Importing toastService
+import { showSuccess, showError } from "../utils/toastService";
 
 const Inventory = () => {
   const [searchedQuery, setSearchQuery] = useState("");
@@ -13,8 +13,14 @@ const Inventory = () => {
   const [qty, setQty] = useState(1);
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [balance, setBalance] = useState(0);
   const [products, setProducts] = useState([]);
   const [transactionId, setTransactionId] = useState("");
+  const [transactionType, setTransactionType] = useState("Cash");
+  const [customerName, setCustomerName] = useState(""); // ✅ Customer name
+  const [customerNum, setCustomerNum] = useState("");
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   const token = localStorage.getItem("token");
   const config = {
@@ -23,22 +29,27 @@ const Inventory = () => {
     },
   };
 
-  // Fetch products once on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get(`${BASE_URL}/api/products/products`, config);
-        console.log("Fetched products:", data.products);  // <--- Add here
+        const { data } = await axios.get(
+          `${BASE_URL}/api/products/products`,
+          config
+        );
         setProducts(data.products);
       } catch (error) {
         console.error("Error fetching products:", error);
-        showError("Failed to fetch products"); // Show error toast
+        showError("Failed to fetch products");
       }
     };
     fetchProducts();
   }, []);
 
-  // Memoize filtered items based on search query
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) setLoggedInUser(user);
+  }, []);
+
   const filteredItems = useMemo(() => {
     return products.filter(
       (item) =>
@@ -47,31 +58,22 @@ const Inventory = () => {
     );
   }, [searchedQuery, value, products]);
 
-  // Memoized function for calculating total
   const calculateTotal = useCallback((price, qty) => price * qty, []);
 
-  // Handle product selection from search
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setSearchQuery(product.name);
     setValue("");
   };
 
-  // Handle quantity input change
   const handleQuantityChange = (e) => {
     const newQty = parseInt(e.target.value, 10);
-    if (!isNaN(newQty) && newQty > 0) {
-      setQty(newQty);
-    } else {
-      setQty(1);
-    }
+    setQty(!isNaN(newQty) && newQty > 0 ? newQty : 1);
   };
 
-  // Add product to cart
   const addProductToCart = () => {
     if (!selectedProduct || qty <= 0 || qty > selectedProduct.quantity) {
-        showError("Invalid quantity. Check available stock."); // Show error toast
-    //   alert("Invalid quantity. Check available stock.");
+      showError("Invalid quantity. Check available stock.");
       return;
     }
 
@@ -92,7 +94,7 @@ const Inventory = () => {
             : item
         )
       );
-      showSuccess(`${selectedProduct.name} updated in cart`); // Show success toast
+      showSuccess(`${selectedProduct.name} updated in cart`);
     } else {
       setCartItems((prev) => [
         ...prev,
@@ -104,7 +106,7 @@ const Inventory = () => {
           sum: calculateTotal(selectedProduct.price, qty),
         },
       ]);
-      showSuccess(`${selectedProduct.name} added to cart`); // Show success toast
+      showSuccess(`${selectedProduct.name} added to cart`);
     }
 
     setProducts((prevProducts) =>
@@ -118,8 +120,7 @@ const Inventory = () => {
     setSearchQuery("");
   };
 
-  // Remove product from cart
-  const removeProductFromCart = async (id) => {
+  const removeProductFromCart = (id) => {
     const itemToRemove = cartItems.find((item) => item._id === id);
     if (!itemToRemove) return;
 
@@ -132,12 +133,11 @@ const Inventory = () => {
     );
 
     setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
-    showSuccess("Item removed from cart"); // Show success toast
+    showSuccess("Item removed from cart");
   };
 
-  // Update cart item quantity
   const updateCartItemQuantity = (id, newQty) => {
-    if (newQty < 1) return; // Ensure minimum quantity of 1
+    if (newQty < 1) return;
     setCartItems((prevItems) =>
       prevItems.map((item) => {
         if (item._id !== id) return item;
@@ -163,7 +163,6 @@ const Inventory = () => {
     );
   };
 
-  // Clear product selection
   const handleClearSelection = () => {
     setSelectedProduct(null);
     setSearchQuery("");
@@ -171,7 +170,6 @@ const Inventory = () => {
     setValue("");
   };
 
-  // Complete cart checkout and print receipt
   const clearCart = async () => {
     if (cartItems.length === 0) {
       alert("Cart is empty");
@@ -179,33 +177,39 @@ const Inventory = () => {
     }
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/carts/complete`, {
-        cart: cartItems.map((item) => ({
-          transactionId: "",
-          productId: item._id,
-          name: item.name,
-          quantity: item.qty,
-          price: item.price,
-          totalAmount: item.sum,
-        })),
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,  // Add token to Authorization header
+      const response = await axios.post(
+        `${BASE_URL}/api/carts/complete`,
+        {
+          customerName, // ✅ Send customer name
+          customerNum,
+          cart: cartItems.map((item) => ({
+            productId: item._id,
+            name: item.name,
+            quantity: item.qty,
+            price: item.price,
+            totalAmount: item.sum,
+          })),
+          paymentType: transactionType,
+          amountPaid,
+          balance,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
-        showSuccess("Order completed!"); // Show success toast
+        showSuccess("Order completed!");
         setTransactionId(response.data.transactionId);
-        
       }
     } catch (error) {
       console.error("Order error:", error);
-      showError("Failed to complete order"); // Show error toast
+      showError("Failed to complete order");
     }
   };
 
-  // Print the receipt once transactionId is set
   useEffect(() => {
     if (transactionId) {
       setTimeout(() => {
@@ -213,16 +217,22 @@ const Inventory = () => {
         setTransactionId("");
         setCartItems([]);
         setTotal(0);
+        setAmountPaid(0);
+        setBalance(0);
+        setCustomerName(""); // Clear after print
+        setCustomerNum("");
       }, 500);
     }
   }, [transactionId]);
 
-  // Update total cost when cart items change
   useEffect(() => {
     setTotal(cartItems.reduce((sum, item) => sum + item.sum, 0));
   }, [cartItems]);
 
-  // Print receipt after transaction
+  useEffect(() => {
+    setBalance(total - amountPaid);
+  }, [total, amountPaid]);
+
   const printReceipt = () => {
     const printContent = document.getElementById("print-section").innerHTML;
     const win = window.open("", "_blank");
@@ -231,10 +241,31 @@ const Inventory = () => {
         <head>
           <title>Receipt</title>
           <style>
-            body { font-family: Arial; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-            h2, h3 { text-align: center; }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 10px;
+              margin: 0;
+              font-size: 12px;
+            }
+            h2, h3 {
+              text-align: center;
+              margin: 5px 0;
+              font-size: 14px;
+            }
+            p {
+              margin: 2px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 8px;
+              font-size: 12px;
+            }
+            th, td {
+              border: 1px solid #000;
+              padding: 4px;
+              text-align: left;
+            }
           </style>
         </head>
         <body>
@@ -256,15 +287,21 @@ const Inventory = () => {
       <header>
         <h1 className="add-inventory-name">
           <span>Inventory Management</span> System
+          {loggedInUser && (
+            <p style={{ fontSize: "14px", marginTop: "5px", color: "#555" }}>
+              Logged in as:{" "}
+              <strong>{loggedInUser.username || loggedInUser.email}</strong>
+            </p>
+          )}
         </h1>
       </header>
 
-      {/* Add Products Section */}
+      {/* Add Products Table */}
       <h3>Add Products</h3>
       <div className="inventory-add-div">
         <table className="inventory-responsive-table">
           <thead>
-            <tr>
+            <tr className="inventory-1-tr">
               <th>Product Name</th>
               <th>Price</th>
               <th>Available Qty</th>
@@ -274,7 +311,7 @@ const Inventory = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr className="inventory-1-tr">
               <td>
                 <input
                   type="text"
@@ -289,7 +326,10 @@ const Inventory = () => {
                 {value && !selectedProduct && filteredItems.length > 0 && (
                   <ul className="dropdown">
                     {filteredItems.slice(0, 5).map((item) => (
-                      <li key={item._id} onClick={() => handleProductClick(item)}>
+                      <li
+                        key={item._id}
+                        onClick={() => handleProductClick(item)}
+                      >
                         {item.name}
                       </li>
                     ))}
@@ -347,37 +387,11 @@ const Inventory = () => {
         </table>
       </div>
 
-      {/* Cart Section */}
-      <div id="print-section" style={{ display: "none" }}>
-  <h2>Receipt</h2>
-  <p>Transaction ID: {transactionId}</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {cartItems.map((item) => (
-        <tr key={item._id}>
-          <td>{item.name}</td>
-          <td>{item.qty}</td>
-          <td>{item.price}</td>
-          <td>{item.sum}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-  <h3>Grand Total: {total}</h3>
-</div>
-
+      {/* Cart Table */}
       <h3>Cart</h3>
       <table className="inventory-responsive-table">
         <thead>
-          <tr>
+          <tr className="inventory-1-tr">
             <th>Item</th>
             <th>Price</th>
             <th>Qty</th>
@@ -387,7 +401,7 @@ const Inventory = () => {
         </thead>
         <tbody>
           {cartItems.map((item) => (
-            <tr key={item._id}>
+            <tr key={item._id} className="inventory-1-tr">
               <td>{item.name}</td>
               <td>{item.price}</td>
               <td>
@@ -437,14 +451,98 @@ const Inventory = () => {
         </tbody>
       </table>
 
+      {/* Checkout Section */}
       <div className="parent">
-        <input className="total-input" type="text" value={total} readOnly />
+        <label className="inventory-cal2-input">
+          Customer Name:
+          <input
+            type="text"
+            placeholder="Enter customer name"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+          />
+        </label>
+
+        <label className="inventory-cal2-input">
+        Cus Phone Num:
+          <input
+            type="number"
+            placeholder="Enter customer phone"
+            value={customerNum}
+            onChange={(e) => setCustomerNum(e.target.value)}
+          />
+        </label>
+
+        <label className="inventory-cal2-input add">
+          Payment Type:
+          <select
+            value={transactionType}
+            onChange={(e) => setTransactionType(e.target.value)}
+          >
+            <option value="Cash">Cash</option>
+            <option value="POS">POS</option>
+            <option value="Transfer">Transfer</option>
+          </select>
+        </label>
+
+        <label className="inventory-cal2-input">
+          Amount Paid:
+          <input
+            type="number"
+            value={amountPaid}
+            onChange={(e) => setAmountPaid(Number(e.target.value))}
+          />
+        </label>
+
+        <input
+          className="total-input"
+          type="text"
+          value={`Balance: ${balance}`}
+          readOnly
+        />
+
         <button className="inventory-checkout-btn" onClick={clearCart}>
           Complete Order
         </button>
+      </div>
+
+      {/* Print Section */}
+      <div id="print-section" style={{ display: "none" }}>
+        <h2>Receipt</h2>
+        <p>Customer Name: {customerName}</p> {/* ✅ Display customer name */}
+        <p>Customer Phone Num: {customerNum}</p>
+        <p>Transaction ID: {transactionId}</p>
+        <p>Payment Method: {transactionType}</p>
+        {loggedInUser && (
+          <p>Handled By: {loggedInUser.username || loggedInUser.email}</p>
+        )}
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cartItems.map((item) => (
+              <tr key={item._id}>
+                <td>{item.name}</td>
+                <td>{item.qty}</td>
+                <td>{item.price}</td>
+                <td>{item.sum}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <h3>Grand Total: {total}</h3>
+        <p>Amount Paid: {amountPaid}</p>
+        <p>Balance: {balance}</p>
       </div>
     </div>
   );
 };
 
 export default Inventory;
+

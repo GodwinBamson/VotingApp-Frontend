@@ -199,6 +199,12 @@ h1 {
   border-radius: 50px;
 }
 
+
+.add-product-cancel{
+  background-color: red !important;
+  color: white !important;
+}
+
 /* Responsive Styles */
 @media (max-width: 767px){
   .add-search-container input{
@@ -238,9 +244,19 @@ h1 {
     padding-bottom: 1rem;
   }
 
-  .add-column td{
+  .add-column {
     display: flex;
     width: 100%;
+  }
+
+  .add-column td{
+    /* display: flex; */
+    width: 100%;
+  }
+
+  .add-product-cancel{
+    background-color: red !important;
+    color: white !important;
   }
 
   .add-table-container {

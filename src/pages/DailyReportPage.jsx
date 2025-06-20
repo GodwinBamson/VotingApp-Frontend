@@ -1,37 +1,47 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../../config";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { Bar } from "react-chartjs-2";
+import "chart.js/auto";
 import "../css/DailyReportPage.css";
 
 const DailyReportPage = () => {
   const [summary, setSummary] = useState([]);
+  const [filteredSummary, setFilteredSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Number of items per page
-  const [searchDate, setSearchDate] = useState(""); // For search by date
+  const [itemsPerPage] = useState(5);
+  const [searchDate, setSearchDate] = useState("");
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) setLoggedInUser(user);
+  }, []);
 
   useEffect(() => {
     const fetchDailySummary = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/carts/daily-summary`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        const updatedSummary = res.data.map(day => ({
+        const updated = res.data.map((day) => ({
           ...day,
           percentage: "1%",
-          percentageAmount: (day.totalSales * 0.01).toFixed(2)
+          percentageAmount: (day.totalSales * 0.01).toFixed(2),
         }));
 
-        setSummary(updatedSummary);
+        setSummary(updated);
+        setFilteredSummary(updated);
       } catch (error) {
         console.error("Error fetching daily sales summary:", error);
       } finally {
@@ -42,27 +52,49 @@ const DailyReportPage = () => {
     fetchDailySummary();
   }, [token]);
 
-  const totalPercentageAmount = summary.reduce(
-    (acc, day) => acc + parseFloat(day.percentageAmount),
-    0
-  );
+  useEffect(() => {
+    let data = [...summary];
 
-  const totalDailySales = summary.reduce(
-    (acc, day) => acc + parseFloat(day.totalSales),
-    0
-  );
+    if (searchDate) {
+      data = data.filter((day) => day.date.includes(searchDate));
+    }
 
-  const formatCurrency = (amount) => {
-    return `₦${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
+    if (fromDate && toDate) {
+      data = data.filter((day) => day.date >= fromDate && day.date <= toDate);
+    }
+
+    if (paymentTypeFilter) {
+      data = data.filter(
+        (day) =>
+          day.paymentType &&
+          day.paymentType.toLowerCase() === paymentTypeFilter.toLowerCase()
+      );
+    }
+
+    setFilteredSummary(data);
+  }, [searchDate, paymentTypeFilter, fromDate, toDate, summary]);
+
+  const formatCurrency = (amount) =>
+    `₦${Number(amount).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(summary.map(day => ({
-      Date: day.date,
-      "Daily Sales": day.totalSales,
-      Percentage: day.percentage,
-      "Percentage Amount": day.percentageAmount
-    })));
+    const ws = XLSX.utils.json_to_sheet(
+      filteredSummary.map((day) => ({
+        Date: day.date,
+        "Payment Type": day.paymentType,
+        "Customer Name(s)": day.customerNames,
+        "Phone Number(s)": day.customerNums,
+        Paid: day.totalPaid,
+        Balance: day.totalBalance,
+        "Daily Sales": day.totalSales,
+        Percentage: day.percentage,
+        "Percentage Amount": day.percentageAmount,
+        "Logged In User": loggedInUser?.username || "",
+      }))
+    );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Daily Summary");
     XLSX.writeFile(wb, "DailySalesSummary.xlsx");
@@ -73,113 +105,255 @@ const DailyReportPage = () => {
     doc.text("Daily Sales Summary", 14, 15);
     autoTable(doc, {
       startY: 25,
-      head: [['Date', 'Daily Sales', 'Percentage', 'Percentage Amount']],
-      body: summary.map(day => [
+      head: [
+        [
+          "Date",
+          "Payment Type",
+          "Customer Name(s)",
+          "Phone Number(s)",
+          "Paid",
+          "Balance",
+          "Sales",
+          "Percentage",
+          "Percentage Amount",
+          "Logged In User",
+        ],
+      ],
+      body: filteredSummary.map((day) => [
         day.date,
+        day.paymentType,
+        day.customerNames,
+        day.customerNums,
+        formatCurrency(day.totalPaid),
+        formatCurrency(day.totalBalance),
         formatCurrency(day.totalSales),
         day.percentage,
-        formatCurrency(day.percentageAmount)
-      ])
+        formatCurrency(day.percentageAmount),
+        loggedInUser?.username || "",
+      ]),
+      styles: { fontSize: 8 },
     });
     doc.save("DailySalesSummary.pdf");
   };
 
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = summary.slice(indexOfFirstItem, indexOfLastItem);
+  const totalDailySales = filteredSummary.reduce(
+    (acc, day) => acc + parseFloat(day.totalSales),
+    0
+  );
 
-  // Search function
-  const filteredSummary = searchDate
-    ? currentItems.filter(day => day.date.includes(searchDate))
-    : currentItems;
+  const totalPercentageAmount = filteredSummary.reduce(
+    (acc, day) => acc + parseFloat(day.percentageAmount),
+    0
+  );
 
-  // Change page
-  const nextPage = () => {
-    if (currentPage < Math.ceil(summary.length / itemsPerPage)) {
-      setCurrentPage(prevPage => prevPage + 1);
-    }
+  const chartData = {
+    labels: filteredSummary.map((d) => `${d.date} (${d.paymentType})`),
+    datasets: [
+      {
+        label: "Sales",
+        data: filteredSummary.map((d) => d.totalSales),
+        backgroundColor: "rgba(75,192,192,0.6)",
+      },
+    ],
   };
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prevPage => prevPage - 1);
-    }
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredSummary.slice(indexOfFirstItem, indexOfLastItem);
+
+  const groupByDate = (data) => {
+    const grouped = {};
+    data.forEach((entry) => {
+      const { date, totalSales } = entry;
+      if (!grouped[date]) {
+        grouped[date] = 0;
+      }
+      grouped[date] += parseFloat(totalSales);
+    });
+    return Object.entries(grouped).map(([date, total]) => ({
+      date,
+      totalSales: total,
+    }));
   };
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Daily Sales Summary</h2>
 
-      {loading ? <p>Loading...</p> : (
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
         <>
-          <div className="flex gap-4 mb-4">
+          {/* Export Buttons */}
+          <div className="report-files1">
             <button
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+              className=".report-btn1"
             >
               Export to Excel
             </button>
             <button
               onClick={exportToPDF}
-              className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+              className=".report-btn1"
             >
               Export to PDF
             </button>
+            {/* <button
+              onClick={() => window.print()}
+              className=".report-btn1"
+            >
+              Print Page
+            </button> */}
           </div>
 
-          <div className="mb-4">
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <input
+              type="date"
+              className="p-2 border rounded"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+            <input
+              type="date"
+              className="p-2 border rounded"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
+            <select
+              className="p-2 border rounded"
+              value={paymentTypeFilter}
+              onChange={(e) => setPaymentTypeFilter(e.target.value)}
+            >
+              <option value="">All Payment Types</option>
+              <option value="Cash">Cash</option>
+              <option value="POS">POS</option>
+              <option value="Transfer">Transfer</option>
+              {/* <option value="Online">Online</option> */}
+            </select>
             <input
               type="text"
-              placeholder="Search by date"
-              className="p-2 border border-gray-400 rounded"
+              placeholder="Search by Date"
+              className="p-2 border rounded"
               value={searchDate}
               onChange={(e) => setSearchDate(e.target.value)}
             />
           </div>
 
+          {/* Totals */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="p-4 bg-green-100 border border-green-400 rounded-lg shadow text-green-800">
+            <div className="p-4 bg-green-100 border border-green-400 rounded-lg text-green-800">
               <h3 className="text-lg font-semibold">Total Daily Sales</h3>
               <p className="text-2xl">{formatCurrency(totalDailySales)}</p>
             </div>
-            <div className="p-4 bg-blue-100 border border-blue-400 rounded-lg shadow text-blue-800">
+            <div className="p-4 bg-blue-100 border border-blue-400 rounded-lg text-blue-800">
               <h3 className="text-lg font-semibold">Total Percentage Amount</h3>
-              <p className="text-2xl">{formatCurrency(totalPercentageAmount)}</p>
+              <p className="text-2xl">
+                {formatCurrency(totalPercentageAmount)}
+              </p>
             </div>
           </div>
 
-          <table className="min-w-full bg-white border rounded shadow">
+          {/* Grouped Table */}
+          <div className="bg-white p-4 border rounded mb-6 shadow">
+            <h3 className="text-lg font-bold mb-4">
+              Daily Sales Totals (Grouped)
+            </h3>
+            <table className="report-table-container1">
+              <thead className="bg-gray-100">
+                <tr className="report-table-container1-tr">
+                  <th className="border p-2">Date</th>
+                  <th className="border p-2">Total Sales</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groupByDate(filteredSummary).map((day, index) => (
+                  <tr key={index} className="report-container-1-tbody-tr">
+                    <td className="border p-2">{day.date}</td>
+                    <td className="border p-2">
+                      {formatCurrency(day.totalSales)}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-gray-200 font-semibold report-container-1-tbody-tr">
+                  <td className="border p-2">Grand Total</td>
+                  <td className="border p-2">
+                    {formatCurrency(
+                      groupByDate(filteredSummary).reduce(
+                        (acc, day) => acc + day.totalSales,
+                        0
+                      )
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 className="text-lg font-bold mb-2">Sales Chart</h3>
+            <Bar data={chartData} />
+          </div>
+
+          {/* Full Table */}
+          <div className="report-table-parent">
+            <table className="report-table-containe">
             <thead>
-              <tr className="daily-report-head">
-                <th className="border p-2">Day</th>
-                <th className="border p-2">Daily Sales</th>
-                <th className="border p-2">Percentage</th>
-                <th className="border p-2">Percentage Amount</th>
+              <tr className="bg-gray-100 tr-2">
+                <th className="border p-2">Date</th>
+                <th className="border p-2">Payment Type</th>
+                <th className="border p-2">Customer Name(s)</th>
+                <th className="border p-2">Phone Number(s)</th>
+                <th className="border p-2">Paid</th>
+                <th className="border p-2">Balance</th>
+                <th className="border p-2">Sales</th>
+                {/* <th className="border p-2">Percentage</th>
+                <th className="border p-2">Percentage Amount</th> */}
+                <th className="border p-2">Logged In User</th>
               </tr>
             </thead>
             <tbody>
-              {filteredSummary.map((day, index) => (
-                <tr key={index} className="daily-report-body">
+              {currentItems.map((day, index) => (
+                <tr key={index} className="tr-2">
                   <td className="border p-2">{day.date}</td>
-                  <td className="border p-2">{formatCurrency(day.totalSales)}</td>
-                  <td className="border p-2">{day.percentage}</td>
-                  <td className="border p-2">{formatCurrency(day.percentageAmount)}</td>
+                  <td className="border p-2">{day.paymentType}</td>
+                  <td className="border p-2">{day.customerNames}</td>
+                  <td className="border p-2">{day.customerNums}</td>
+                  <td className="border p-2">
+                    {formatCurrency(day.totalPaid)}
+                  </td>
+                  <td className="border p-2">
+                    {formatCurrency(day.totalBalance)}
+                  </td>
+                  <td className="border p-2">
+                    {formatCurrency(day.totalSales)}
+                  </td>
+                  {/* <td className="border p-2">{day.percentage}</td>
+                  <td className="border p-2">
+                    {formatCurrency(day.percentageAmount)}
+                  </td> */}
+
+                  <td className="border p-2">{loggedInUser?.username || ""}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          <div className="flex daily-report-div mt-4">
+        </div>
+          {/* Pagination */}
+          <div className="pagination-controls1">
             <button
-              onClick={prevPage}
-              className="bg-blue-600 text-white px-4 py-2 daily-report-button rounded shadow hover:bg-blue-700"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Previous
             </button>
             <button
-              onClick={nextPage}
-              className="bg-blue-600 text-white px-4 py-2 daily-report-button rounded shadow hover:bg-blue-700"
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  prev < Math.ceil(filteredSummary.length / itemsPerPage)
+                    ? prev + 1
+                    : prev
+                )
+              }
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Next
             </button>
@@ -191,3 +365,7 @@ const DailyReportPage = () => {
 };
 
 export default DailyReportPage;
+
+
+
+

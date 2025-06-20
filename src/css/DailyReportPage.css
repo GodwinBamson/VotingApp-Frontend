@@ -1,42 +1,195 @@
-.daily-report-button{
-    width: 20% !important;
-}
+
+
+.report-files1{
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  
+  .report-files1 button:first-child{
+    background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));
+  }
+
+  .report-files1 button:last-child{
+    background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));
+  }
+  
+.pagination-controls1{
+    margin: 0 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .pagination-controls1 span{
+    margin-top: 30px;
+  }
+  
+  .pagination-controls1 button{
+    width: 10%;
+    padding: 8px 8px;
+    border-radius: 50px;
+  }
+  .report-btn1{
+    margin-top: 0;
+    width: 80%;
+    padding: 5px 10px;
+  }
+  .report-table-container1{
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  .report-table-container{
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  th{background-color: #f4f4f4;}
 
 .daily-report-div{
     justify-content: space-between;
-}
-@media (max-width: 767px){
-.daily-report-head{
-    display: flex;
-}
+ }
 
-.daily-report-head th{
-    width: 100%;
-}
 
-.daily-report-body{
-    display: flex;
-}
+  /* Media Queries */
+  
+  @media (max-width: 767px) {
 
-.daily-report-body td{
-    width: 100%;
-}
-
-.daily-report-button{
-    width: 30% !important;
-}
-
-.daily-report-div{
-    justify-content: space-between;
-}
-}
-
-@media (min-width: 767px) and (max-width: 1023px){
-    .daily-report-button{
-        width: 30% !important;
+    .report-search-container{
+      gap: 1.5rem;
     }
     
-    .daily-report-div{
-        justify-content: space-between;
+    table {
+      font-size: 16px;
     }
+  
+    th, td {
+      padding: 8px;
+    }
+
+    .report-table-container table thead tr{
+      display: flex;
+    }
+
+    
+    .report-table-container1 table thead tr{
+      display: flex;
+    }
+
+
+    .report-btn{
+      flex-direction: column;
+      width: 100%;
+    }
+
+    /* .report-btn button{
+      width: 100%;
+    } */
+    
+    .report-qty{
+      width: 8%;
+    }
+
+    .report-amount{
+      width: 15%;
+    }
+
+    .report-date{
+      width: 18%;
+    }
+
+    .report-product-name{
+      width: 20%;
+    }
+
+    .report-transaction-id{
+      width: 25%;
+    }
+
+    .modal{
+      width: 400px;
+    }
+
+    .report-view span {
+      color: #007bff;
+    }
+    
+    .report-view {
+      letter-spacing: 1.8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: red;
+    }
+
+    .report-header span {
+      color: #007bff;
+    }
+    
+    .report-header {
+      letter-spacing: 1.8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: red;
+    }
+
+    .pagination-controls button {
+      width: 20%;
+      padding: 8px 8px;
+      border-radius: 50px;
+  }
+
+  .report-table-parent{
+    overflow-x: auto;
+  }
+
+  .report-table-parent table thead{
+    display: flex;
+  }
+
+  .tr-2{
+    display: flex;
+  }
+
+  .pagination-controls1 button {
+    width: 20%;
 }
+  }
+  
+  @media (min-width: 767px) and (max-width: 1023px) {
+
+  .report-transaction-id {
+    width: 30%;
+}
+
+.report-product-name {
+  width: 20%;
+}
+
+.report-table-container table thead tr th{
+  width: 15vw;
+}
+
+
+.report-container-1-tbody-tr{
+  display: block !important;
+}
+
+.report-table-container1-tr{
+  display: flex !important;
+}
+
+.report-btn{
+  margin-left: 1rem;
+  width: 40%;
+}
+
+.report-qty{
+  width: 5%;
+}
+  }

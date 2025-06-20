@@ -6,6 +6,7 @@
   padding: 1rem;
   background: linear-gradient(to right, green 0%, blue 50%, red 100%);
   color: white;
+  /* width: 100%; */
 }
 
 .navbar-left .navbar-brand {
@@ -120,6 +121,7 @@
 
 /* Media Queries for Mobile & Tablet Responsiveness */
 @media screen and (max-width: 768px) {
+
   .navbar-right {
     display: none; /* Hide navbar items by default */
     width: 100%;
@@ -145,9 +147,23 @@
 
 /* Media Query for Tablet (768px to 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {
+  .navbar{
+    /* width: 120%; */
+  }
+
   .navbar-right.open .navbar-link {
     margin: 0;
     flex: 0 0 14.5%;
     max-width: 50%;
   }
+
+.navbar-link{
+  border-radius: 5px;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-right {
+  gap: 13px;
+}
 }

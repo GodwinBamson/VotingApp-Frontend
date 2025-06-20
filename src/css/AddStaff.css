@@ -149,7 +149,17 @@
   .add-buttons button:last-child{
     background-color: red;
   }
+
+  .add-product-cancel1{
+    background-color: red !important;
+    color: white !important;
+  }
   
+  
+  .add-staff-role{
+    /* display: flex; */
+  }
+
   
     
     /* Responsiveness */
@@ -168,20 +178,20 @@
       }
   
       .admin-register-form input{
-        width: 99%;
+        width: 90vw;
       }
   
       .admin-register-form select{
-        width: 99%;
+        width: 90vw;
       }
   
       .admin-register-form button{
-        width: 99%;
+        width: 150%;
       }
   
       .add-register-table {
-        /* display: block; */
-        width: 90vw;
+        display: block;
+        width: 101vw;
 
       }
 
@@ -197,6 +207,19 @@
       .add-staff-role-head{
         display: flex;
       }
+
+      .add-product-cancel1{
+        background-color: red !important;
+        color: white !important;
+      }
+
+      .admin-register-form, .admin-register-div {
+        width: 100%;
+    }
+
+    .add-staff-role{
+      /* display: flex; */
+    }
   
       .add-staff-role-head th{
         width: 100% !important;
@@ -223,7 +246,7 @@
   
     @media (min-width: 767px) and (max-width: 1023px){
       .admin-register{
-        gap: 2rem;
+        /* gap: 2rem; */
       }
   
       .add-buttons button{

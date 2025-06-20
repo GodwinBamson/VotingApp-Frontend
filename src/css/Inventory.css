@@ -142,14 +142,27 @@ li:hover{
 
 .total-input{
   width: 20%;
-  height: 6vh;
+  height: 7vh;
   background-color: white;
+  margin-top: 24px;
 }
 
 .parent{
   display: flex;
-  justify-content: space-between;
+  align-self: center;
   padding-top: 1rem;
+  gap: 10px;
+}
+
+.inventory-cal2-input {
+  width: 30%;
+}
+
+.add{
+  text-align: center;
+  display: flex;
+  align-self: center;
+  justify-content: center;
 }
 
 .quantity-name{
@@ -175,6 +188,7 @@ li:hover{
   color: red;
 }
 
+
 #print-section{
   margin: 0 5rem;
 }
@@ -194,16 +208,18 @@ li:hover{
 }
 
 .inventory-checkout-btn {
-  width: auto;
-  /* height: 40px; */
-  padding: 5px 16px;
+  width: 75px;
+  height: 55px;
+  padding: 3px 4px;
   color: white;
   border-radius: 7px;
   background-color: #007bff;
-  margin-top: 0;
+  /* margin-top: 0; */
   text-align: center;
   display: flex;
 }
+
+
 
 @media (max-width: 767px){
   .inventory-responsive-table tbody tr td{
@@ -218,6 +234,14 @@ li:hover{
     width: 70%;
   }
 
+  .parent{
+    flex-direction: column;
+  }
+
+  .inventory-cal2-input{
+    width: 100vw;
+  }
+
   .inventory-add-div{
     overflow-x: auto;
     white-space: nowrap;
@@ -230,8 +254,12 @@ li:hover{
     border-width: 0;
   }
 
-  .inventory-responsive-table thead tr, tbody tr{
+  .inventory-1-tr{
     display: flex;
+  }
+
+  .inventory-checkout-btn {
+    width: 33%;
   }
 
   .inventory-responsive-table tbody{
@@ -348,8 +376,12 @@ th, td {
 }
 
 .total-input {
-  width: 23%;
+  width: 45%;
   height: 4vh;
+}
+
+.inventory-cal2-input input{
+  width: 96% !important;
 }
 
 .complete{
@@ -388,9 +420,10 @@ th, td {
     width: 30%;
   }
 
-  .total-input {
-    width: 20%;
-    height: 4vh;
-    background-color: white;
+.total-input{
+  width: 20%;
+  height: 4vh;
+  background-color: white;
+  margin-top: 24px;
 }
 }

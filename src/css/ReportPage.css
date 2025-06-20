@@ -269,6 +269,10 @@ button {
       width: 100%;
     }
 
+    .transac-tr{
+      display: flex;
+    }
+
     /* .report-btn button{
       width: 100%;
     } */
