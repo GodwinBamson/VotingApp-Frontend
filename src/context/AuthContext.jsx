@@ -1,35 +1,44 @@
-
-import { createContext, useState, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
+import API, { getCSRFToken } from "../api";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-
-      // Optionally check token expiration here (if needed)
-      setUser(parsedUser);
+  const fetchUser = async () => {
+    try {
+      const res = await API.get("/auth/profile");
+      setUser(res.data);
+    } catch {
+      setUser(null);
     }
-  }, []);
-
-  const login = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const logout = async () => {
+    try {
+      const csrfToken = await getCSRFToken();
+      await API.post(
+        "/auth/logout",
+        {},
+        {
+          headers: { "X-CSRF-Token": csrfToken },
+        }
+      );
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
     setUser(null);
+    localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
