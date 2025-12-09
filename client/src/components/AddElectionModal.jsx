@@ -23,7 +23,9 @@ const AddElectionModal = () => {
       electionData.set("thumbnail", thumbnail);
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/elections`,
+        // `${import.meta.env.VITE_API_URL}/api/elections`,
+
+        `${import.meta.env.VITE_API_URL}/elections`,
         electionData,
         {
           withCredentials: true,

@@ -23,7 +23,9 @@ const ConfirmVote = ({ selectedElection }) => {
   const fetchCandidate = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/candidates/${selectedVoteCandidate}`,
+        // `${import.meta.env.VITE_API_URL}/api/candidates/${selectedVoteCandidate}`,
+
+        `${import.meta.env.VITE_API_URL}/candidates/${selectedVoteCandidate}`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
@@ -37,22 +39,22 @@ const ConfirmVote = ({ selectedElection }) => {
 
   const confirmVote = async () => {
     try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/api/candidates/${selectedVoteCandidate}`,
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/candidates/${selectedVoteCandidate}`,
         { selectedElection },
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const voteResult = response.data;
-      dispatch(
-        voteActions.changeCurrentVoter({
-          ...currentvoter,
-          votedElections: voteResult,
-        })
-      );
+
+      // Go to congrats page first
       navigate("/congrats");
+
+      // Refresh after a short delay (so navigation works)
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.log(error);
     }

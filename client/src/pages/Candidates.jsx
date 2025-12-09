@@ -155,7 +155,9 @@ const Candidates = () => {
   const getCandidates = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections/${selectedElection}/candidates`,
+        // `${import.meta.env.VITE_API_URL}/api/elections/${selectedElection}/candidates`,
+
+        `${import.meta.env.VITE_API_URL}/elections/${selectedElection}/candidates`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
@@ -171,7 +173,9 @@ const Candidates = () => {
   const getVoter = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/voters/${voterId}`,
+        // `${import.meta.env.VITE_API_URL}/api/voters/${voterId}`,
+
+        `${import.meta.env.VITE_API_URL}/voters/${voterId}`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },

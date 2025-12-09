@@ -16,7 +16,10 @@ const ResultElection = ({ _id: id, thumbnail, title }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections/${id}/candidates`,
+        // `${import.meta.env.VITE_API_URL}/api/elections/${id}/candidates`,
+
+
+         `${import.meta.env.VITE_API_URL}/elections/${id}/candidates`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },

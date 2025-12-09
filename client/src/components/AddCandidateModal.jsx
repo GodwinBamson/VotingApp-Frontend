@@ -31,7 +31,9 @@ const AddCandidateModal = () => {
       candidateInfo.set("currentElection", electionId);
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/candidates`,
+        // `${import.meta.env.VITE_API_URL}/api/candidates`,
+
+        `${import.meta.env.VITE_API_URL}/candidates`,
         candidateInfo,
         {
           withCredentials: true,

@@ -36,7 +36,9 @@ const ElectionDetails = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections/${id}`,
+        // `${import.meta.env.VITE_API_URL}/api/elections/${id}`,
+
+          `${import.meta.env.VITE_API_URL}/elections/${id}`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +55,9 @@ const ElectionDetails = () => {
   const getCandidates = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections/${id}/candidates`,
+        // `${import.meta.env.VITE_API_URL}/api/elections/${id}/candidates`,
+
+        `${import.meta.env.VITE_API_URL}/elections/${id}/candidates`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
@@ -68,7 +72,9 @@ const ElectionDetails = () => {
   const getVoters = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections/${id}/voters`,
+        // `${import.meta.env.VITE_API_URL}/api/elections/${id}/voters`,
+
+         `${import.meta.env.VITE_API_URL}/elections/${id}/voters`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
@@ -82,7 +88,9 @@ const ElectionDetails = () => {
 
   const deleteElection = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/elections/${id}`, {
+      // await axios.delete(`${import.meta.env.VITE_API_URL}/api/elections/${id}`,
+        await axios.delete(`${import.meta.env.VITE_API_URL}/elections/${id}`,
+        {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` },
       });

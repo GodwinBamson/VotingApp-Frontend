@@ -29,7 +29,8 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/voters/login`,
+        // `${import.meta.env.VITE_API_URL}/api/voters/login`,
+        `${import.meta.env.VITE_API_URL}/voters/login`,
         userData
       );
       const newVoter = await response.data; //payload

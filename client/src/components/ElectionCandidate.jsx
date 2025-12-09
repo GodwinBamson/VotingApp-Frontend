@@ -11,7 +11,10 @@ const ElectionCandidate = ({ fullName, image, motto, _id: id }) => {
 
   const deleteCandidate = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/candidates/${id}`, {
+      // await axios.delete(`${import.meta.env.VITE_API_URL}/api/candidates/${id}`,
+      
+      await axios.delete(`${import.meta.env.VITE_API_URL}/candidates/${id}`,
+      {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` },
       });

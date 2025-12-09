@@ -19,7 +19,9 @@ const Results = () => {
   const getElections = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/elections`,
+        // `${import.meta.env.VITE_API_URL}/api/elections`,
+
+        `${import.meta.env.VITE_API_URL}/elections`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
