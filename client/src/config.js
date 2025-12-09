@@ -10,11 +10,16 @@
 // export const BASE_URL = "http://localhost:5000";
 
 
-// config.js
+// // config.js
+// export const BASE_URL = import.meta.env.PROD
+//   ? "https://votingapp-backend-t10i.onrender.com" // Render production
+//   : "http://localhost:5000/api";                      // Local dev
+
+
+
+
 export const BASE_URL = import.meta.env.PROD
-  ? "https://votingapp-backend-t10i.onrender.com/api" // Render production
-  : "http://localhost:5000/api";                      // Local dev
-
-
+  ? "https://votingapp-backend-t10i.onrender.com/api"
+  : "http://localhost:5000/api";
 
 
