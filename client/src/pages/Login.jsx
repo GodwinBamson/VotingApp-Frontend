@@ -103,26 +103,46 @@ const Login = () => {
     setUserData((prevState) => ({ ...prevState, [e.target.name]: e.target.value }));
   };
 
+  // const loginVoter = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.post(
+  //       `${BASE_URL}/voters/login`, // ✅ using BASE_URL
+  //       userData,
+  //       { withCredentials: true } // include cookies if needed
+  //     );
+
+  //     const newVoter = response.data;
+
+  //     // Save voter in local storage & redux
+  //     localStorage.setItem("currentUser", JSON.stringify(newVoter));
+  //     dispatch(voteActions.changeCurrentVoter(newVoter));
+
+  //     navigate("/results");
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || "Login failed"); // safe fallback
+  //   }
+  // };
+
+
   const loginVoter = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/voters/login`, // ✅ using BASE_URL
-        userData,
-        { withCredentials: true } // include cookies if needed
-      );
+  e.preventDefault();
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/voters/login`, // ✅ no extra /api
+      userData,
+      { withCredentials: true }
+    );
 
-      const newVoter = response.data;
-
-      // Save voter in local storage & redux
-      localStorage.setItem("currentUser", JSON.stringify(newVoter));
-      dispatch(voteActions.changeCurrentVoter(newVoter));
-
-      navigate("/results");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed"); // safe fallback
-    }
-  };
+    const newVoter = response.data;
+    localStorage.setItem("currentUser", JSON.stringify(newVoter));
+    dispatch(voteActions.changeCurrentVoter(newVoter));
+    navigate("/results");
+  } catch (err) {
+    console.log(err.response); // check the real backend error
+    setError(err.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <section className="register">
