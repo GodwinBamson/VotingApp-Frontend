@@ -105,21 +105,37 @@ const Login = () => {
 
 
 
-  const loginVoter = async (e) => {
+//   const loginVoter = async (e) => {
+//   e.preventDefault();
+//   try {
+//     const response = await axios.post(
+//       `${BASE_URL}/voters/login`, // ✅ no extra /api
+//       userData,
+//       { withCredentials: true }
+//     );
+
+//     const newVoter = response.data;
+//     localStorage.setItem("currentUser", JSON.stringify(newVoter));
+//     dispatch(voteActions.changeCurrentVoter(newVoter));
+//     navigate("/results");
+//   } catch (err) {
+//     console.log(err.response); // check the real backend error
+//     setError(err.response?.data?.message || "Login failed");
+//   }
+// };
+
+
+const loginVoter = async (e) => {
   e.preventDefault();
   try {
-    const response = await axios.post(
-      `${BASE_URL}/voters/login`, // ✅ no extra /api
-      userData,
-      { withCredentials: true }
-    );
+    const response = await axios.post(`${BASE_URL}/voters/login`, userData);
 
     const newVoter = response.data;
     localStorage.setItem("currentUser", JSON.stringify(newVoter));
     dispatch(voteActions.changeCurrentVoter(newVoter));
     navigate("/results");
   } catch (err) {
-    console.log(err.response); // check the real backend error
+    console.log(err.response);
     setError(err.response?.data?.message || "Login failed");
   }
 };
