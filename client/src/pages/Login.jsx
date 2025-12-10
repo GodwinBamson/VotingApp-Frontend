@@ -181,23 +181,48 @@ const Login = () => {
     setUserData((prevState) => ({ ...prevState, [e.target.name]: e.target.value }));
   };
 
+  // const loginVoter = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.post(`${BASE_URL}/voters/login`, userData);
+  //     const newVoter = response.data;
+
+  //     // Save voter in local storage and Redux store
+  //     localStorage.setItem("currentUser", JSON.stringify(newVoter));
+  //     dispatch(voteActions.changeCurrentVoter(newVoter));
+
+  //     navigate("/results");
+  //   } catch (err) {
+  //     console.log(err.response); // Debug backend errors
+  //     setError(err.response?.data?.message || "Login failed");
+  //   }
+  // };
+
+
   const loginVoter = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${BASE_URL}/voters/login`, userData);
-      const newVoter = response.data;
+  e.preventDefault();
+  try {
+    console.log("Attempting login to:", `${BASE_URL}/voters/login`);
+    console.log("Request data:", userData);
+    
+    const response = await axios.post(`${BASE_URL}/voters/login`, userData);
+    console.log("Login response:", response);
+    
+    const newVoter = response.data;
 
-      // Save voter in local storage and Redux store
-      localStorage.setItem("currentUser", JSON.stringify(newVoter));
-      dispatch(voteActions.changeCurrentVoter(newVoter));
+    // Save voter in local storage and Redux store
+    localStorage.setItem("currentUser", JSON.stringify(newVoter));
+    dispatch(voteActions.changeCurrentVoter(newVoter));
 
-      navigate("/results");
-    } catch (err) {
-      console.log(err.response); // Debug backend errors
-      setError(err.response?.data?.message || "Login failed");
-    }
-  };
-
+    navigate("/results");
+  } catch (err) {
+    console.log("Full error:", err);
+    console.log("Error response:", err.response?.data);
+    console.log("Error status:", err.response?.status);
+    console.log("Error headers:", err.response?.headers);
+    setError(err.response?.data?.message || "Login failed");
+  }
+};
   return (
     <section className="register">
       <div className="container register_container">
