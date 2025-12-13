@@ -3,16 +3,15 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 const Congrats = () => {
-
   const token = useSelector((state) => state?.vote?.currentVoter?.token);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   //ACCESS CONTROL
-  useEffect(()=>{
-    if(!token){
-      navigate('/')
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
     }
-  },[])
+  }, []);
 
   return (
     <section className="congrats">
