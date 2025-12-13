@@ -72,11 +72,10 @@
 //         </form>
 //       </div>
 //     </section>
-//   );
-// };
+//     );
+//   };
 
-// export default Login;
-
+//   export default Login;
 
 
 
@@ -94,39 +93,41 @@ const Login = () => {
     password: "",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Controlled input handler
   const changeInputHandler = (e) => {
-    setUserData((prev) => ({
-      ...prev,
+    setUserData((prevState) => ({
+      ...prevState,
       [e.target.name]: e.target.value,
     }));
+    if (error) setError(""); // Clear error when user starts typing
   };
 
   const loginVoter = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError("");
-
+    
     try {
-      console.log("BASE_URL:", BASE_URL); // 🔍 Debug (remove later)
+      const response = await axios.post(`${BASE_URL}/api/voters/login`, userData, {
+        withCredentials: true // Important for cookies/session if using
+      });
+      const newVoter = response.data;
 
-      const res = await axios.post(
-        `${BASE_URL}/voters/login`,
-        userData,
-        { withCredentials: true }
-      );
-
-      const voter = res.data;
-
-      localStorage.setItem("currentUser", JSON.stringify(voter));
-      dispatch(voteActions.changeCurrentVoter(voter));
+      // Save voter in local storage and Redux store
+      localStorage.setItem("currentUser", JSON.stringify(newVoter));
+      dispatch(voteActions.changeCurrentVoter(newVoter));
 
       navigate("/results");
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Login failed");
+      console.error("Login error:", err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,24 +142,32 @@ const Login = () => {
             type="email"
             name="email"
             placeholder="Email Address"
+            value={userData.email}
             onChange={changeInputHandler}
+            autoComplete="email"
             required
+            disabled={loading}
           />
-
           <input
             type="password"
             name="password"
             placeholder="Password"
+            value={userData.password}
             onChange={changeInputHandler}
+            autoComplete="current-password"
             required
+            disabled={loading}
           />
 
           <p>
             Do not have an account? <Link to="/register">Sign up</Link>
           </p>
-
-          <button type="submit" className="btn primary">
-            Login
+          <button 
+            type="submit" 
+            className="btn primary"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
@@ -167,3 +176,4 @@ const Login = () => {
 };
 
 export default Login;
+
