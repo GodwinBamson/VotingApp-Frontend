@@ -97,7 +97,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 🔍 Debug: Check environment and BASE_URL at runtime
+  // 🔍 Debug: Verify environment
   useEffect(() => {
     console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
     console.log("BASE_URL:", BASE_URL);
@@ -109,7 +109,6 @@ const Login = () => {
     }
   }, []);
 
-  // Controlled input handler
   const changeInputHandler = (e) => {
     setUserData((prev) => ({
       ...prev,
@@ -117,12 +116,10 @@ const Login = () => {
     }));
   };
 
-  // Login function
   const loginVoter = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Prevent request if BASE_URL is missing
     if (!BASE_URL) {
       setError("API URL is missing. Deployment not configured correctly.");
       return;
@@ -147,15 +144,12 @@ const Login = () => {
       console.error("LOGIN ERROR:", err);
 
       if (err.response) {
-        // Server responded with status code outside 2xx
         setError(err.response.data?.message || "Login failed");
       } else if (err.request) {
-        // Request sent but no response (network error)
         setError(
           "Cannot reach server. Check backend is running or network status."
         );
       } else {
-        // Any other error
         setError("Unexpected error occurred during login.");
       }
     }
