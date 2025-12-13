@@ -3,8 +3,11 @@
 //   : "http://localhost:5000/api";
 
 
+export const BASE_URL = import.meta.env.VITE_API_URL;
 
-export const BASE_URL = import.meta.env.PROD
-  ? import.meta.env.VITE_API_URL.replace('/api', '') // Remove /api from the URL
-  : "http://localhost:5000";
+if (!BASE_URL) {
+  throw new Error(
+    "VITE_API_URL is not defined. Set it in your .env for local or Render for production."
+  );
+}
 

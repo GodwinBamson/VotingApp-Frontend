@@ -79,7 +79,6 @@
 
 
 
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -88,40 +87,31 @@ import { voteActions } from "../store/vote-slice";
 import { BASE_URL } from "../config";
 
 const Login = () => {
-  const [userData, setUserData] = useState({
-    email: "",
-    password: "",
-  });
+  const [userData, setUserData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Controlled input handler
   const changeInputHandler = (e) => {
-    setUserData((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value,
-    }));
-    if (error) setError(""); // Clear error when user starts typing
+    setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError("");
   };
 
   const loginVoter = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
-      const response = await axios.post(`${BASE_URL}/api/voters/login`, userData, {
-        withCredentials: true // Important for cookies/session if using
+      const res = await axios.post(`${BASE_URL}/voters/login`, userData, {
+        withCredentials: true,
       });
-      const newVoter = response.data;
 
-      // Save voter in local storage and Redux store
-      localStorage.setItem("currentUser", JSON.stringify(newVoter));
-      dispatch(voteActions.changeCurrentVoter(newVoter));
-
+      const voter = res.data;
+      localStorage.setItem("currentUser", JSON.stringify(voter));
+      dispatch(voteActions.changeCurrentVoter(voter));
       navigate("/results");
     } catch (err) {
       console.error("Login error:", err);
@@ -162,11 +152,7 @@ const Login = () => {
           <p>
             Do not have an account? <Link to="/register">Sign up</Link>
           </p>
-          <button 
-            type="submit" 
-            className="btn primary"
-            disabled={loading}
-          >
+          <button type="submit" className="btn primary" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
@@ -176,4 +162,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
