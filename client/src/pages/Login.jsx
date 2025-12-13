@@ -97,13 +97,15 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 🔍 DEBUG: verify API URL at runtime
+  // 🔍 Debug: Check environment and BASE_URL at runtime
   useEffect(() => {
     console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
     console.log("BASE_URL:", BASE_URL);
 
     if (!BASE_URL) {
-      setError("API configuration error. Please contact admin.");
+      setError(
+        "API configuration missing. Frontend not configured for deployment."
+      );
     }
   }, []);
 
@@ -115,11 +117,12 @@ const Login = () => {
     }));
   };
 
+  // Login function
   const loginVoter = async (e) => {
     e.preventDefault();
     setError("");
 
-    // 🛑 Prevent request if API URL is missing
+    // Prevent request if BASE_URL is missing
     if (!BASE_URL) {
       setError("API URL is missing. Deployment not configured correctly.");
       return;
@@ -129,26 +132,31 @@ const Login = () => {
       const response = await axios.post(
         `${BASE_URL}/voters/login`,
         userData,
-        { withCredentials: true }
+        { withCredentials: true } // include cookies if needed
       );
 
       const newVoter = response.data;
 
-      // Save voter in local storage and Redux store
+      // Save voter in localStorage and Redux
       localStorage.setItem("currentUser", JSON.stringify(newVoter));
       dispatch(voteActions.changeCurrentVoter(newVoter));
 
+      // Navigate to results page
       navigate("/results");
     } catch (err) {
       console.error("LOGIN ERROR:", err);
 
-      // Handle all axios error cases safely
       if (err.response) {
+        // Server responded with status code outside 2xx
         setError(err.response.data?.message || "Login failed");
       } else if (err.request) {
-        setError("Cannot reach server. Check network or backend status.");
+        // Request sent but no response (network error)
+        setError(
+          "Cannot reach server. Check backend is running or network status."
+        );
       } else {
-        setError("Unexpected error occurred.");
+        // Any other error
+        setError("Unexpected error occurred during login.");
       }
     }
   };
@@ -165,6 +173,7 @@ const Login = () => {
             type="email"
             name="email"
             placeholder="Email Address"
+            value={userData.email}
             onChange={changeInputHandler}
             required
             autoFocus
@@ -174,6 +183,7 @@ const Login = () => {
             type="password"
             name="password"
             placeholder="Password"
+            value={userData.password}
             onChange={changeInputHandler}
             required
           />
